@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -26,9 +27,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 
 import android.content.DialogInterface;
-
 
 
 public class MainActivity extends AppCompatActivity {
@@ -86,6 +87,48 @@ public class MainActivity extends AppCompatActivity {
             showExitDialog();
         }
 
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check GPS status every time the activity comes to the foreground
+        checkGpsStatus();
+    }
+
+    private void checkGpsStatus() {
+        if (!isGpsEnabled()) {
+            showGpsAlert();
+        } else {
+            // GPS is enabled, you can now start your app's main functionality
+            // For example:
+            // startLocationUpdates();
+            // loadMaps();
+//            Toast.makeText(this, "Enable GPS First", Toast.LENGTH_LONG).show();
+//            showExitDialog();
+
+        }
+    }
+
+    private boolean isGpsEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    private void showGpsAlert() {
+        new AlertDialog.Builder(this)
+                .setTitle("Location Services Disabled")
+                .setMessage("Please enable GPS to use this app.")
+                .setCancelable(false) // Prevent the dialog from being dismissed by tapping outside
+                .setPositiveButton("Go to Settings", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Exit App", (dialog, which) -> {
+                    finish(); // Close the activity
+                })
+                .show();
     }
 
     public class myWebViewclient extends WebViewClient {
